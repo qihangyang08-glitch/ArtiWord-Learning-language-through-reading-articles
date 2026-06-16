@@ -1,0 +1,243 @@
+# Generate Memory Article (English)
+
+Generate a reading article in the user's target language that embeds vocabulary words for memorization and translation practice.
+
+---
+
+## ⚠️ Encoding Notice (READ FIRST)
+
+On Windows, always prefix Python commands with:
+
+```bash
+PYTHONIOENCODING=utf-8 python ...
+```
+
+All project scripts handle this internally.
+
+---
+
+## Article Purpose
+
+Generate ONE article that serves ALL of:
+1. Vocabulary acquisition (target words in natural context)
+2. Long-sentence analysis practice
+3. Translation training (Target Language ↔ English)
+4. Reading comprehension
+
+The article must read like authentic published writing — never like a vocabulary exercise.
+
+---
+
+## Full Workflow
+
+### Phase 0: Determine Target Language
+
+Ask the user: **"What language are you learning?"** (e.g., French, Spanish, Japanese, German, etc.)
+
+Adjust all subsequent steps accordingly:
+- Source article language = the target language
+- Translation direction = Target Language ↔ English
+- Vocabulary table headings = in English
+- Question language = English
+
+### Phase 1: Environment Check
+
+```bash
+(python -c "import socket; s=socket.socket(); s.connect(('localhost',8080)); s.close()" 2>/dev/null && echo "Server OK") || (echo "Starting..." && start "WordLerning-Server" python -m http.server 8080 --directory .)
+```
+
+### Phase 2: Extract Target Words
+
+```bash
+PYTHONIOENCODING=utf-8 python tools/extract-words.py --count 200
+```
+
+Re-run with `--exclude` if coverage is poor (2-3 times max).
+
+### Phase 3: Search for Source Article
+
+Use WebSearch to find authentic articles **in the target language** from reputable sources.
+
+**Source quality requirements:**
+- Reputable publications in the target language
+- Opinion/analysis/feature essays — NOT straight news
+- Length: 400-800 words
+- Appropriate difficulty for an intermediate-advanced learner
+
+**Topic selection — choose ONLY from:**
+
+| Category | Sub-topics |
+|----------|------------|
+| Technology & Society | AI, social media, privacy, data economy, automation |
+| Science & Human Behavior | psychology, neuroscience, education, memory |
+| Economics & Public Policy | labor markets, urban development, inequality |
+| Environment & Sustainability | climate change, renewable energy, biodiversity |
+| Culture & Modern Life | work-life balance, remote work, digital culture |
+
+### Phase 4: Dedup Check (MANDATORY)
+
+After finding a candidate article and fetching its full text with WebFetch:
+
+```bash
+PYTHONIOENCODING=utf-8 python tools/check-similarity.py \
+  --title "CANDIDATE_TITLE" \
+  --text "CANDIDATE_FULL_TEXT"
+```
+
+| Recommendation | Action |
+|----------------|--------|
+| `safe` | Proceed to Phase 5 |
+| `review_needed` | Read the `matches` — LLM judges if same story/argument |
+| `likely_duplicate` | Skip immediately, search again |
+
+### Phase 5: Assess Vocabulary Overlap
+
+Check how many target words naturally fit the article's topic. If < 10, re-run Phase 2.
+
+### Phase 6: Rewrite the Article
+
+**Authenticity Principle (OVERRIDES ALL):**
+```
+Authenticity > Logic > Difficulty > Vocabulary Coverage
+```
+
+**Vocabulary Integration:**
+1. Prioritize uncommon/idiomatic meanings
+2. Prefer natural collocations and phrasal verbs
+3. NEVER force a word — omit if it doesn't fit
+4. **Bold** all target words with `**word**`
+5. Write like a native speaker of the target language
+
+**Difficulty:** Intermediate-advanced learner level. Abstract reasoning, multi-perspective analysis.
+
+**Structure (4 paragraphs):**
+- P1: Introduce the problem/phenomenon
+- P2: Evidence, examples, research
+- P3: Counterargument, limitations
+- P4: Synthesis, implications
+
+**Long Sentences:** 3-5 sentences (30-60 words each) combining multiple clause types.
+
+### Phase 7: Translation Training Section
+
+Select the 2 hardest sentences. For each, provide:
+1. Original text
+2. Sentence structure analysis
+3. Main clause extraction
+4. Layered syntactic breakdown
+5. Reference English translation
+
+### Phase 8: Full Translation
+
+Paragraph-by-paragraph English translation of the entire article.
+
+### Phase 9: Vocabulary Training Section
+
+Table for ALL target words used:
+
+| Word | Meaning in Context | Core Meaning(s) | Common Collocations | Usage Frequency |
+|------|-------------------|-----------------|---------------------|-----------------|
+| ... | ... | ... | ... | Common / Uncommon |
+
+### Phase 10: Reading Comprehension Questions
+
+1. **2 Vocabulary-in-Context questions** (4 options each)
+2. **2 Inference questions** (4 options each)
+3. **1 Main Idea question** (4 options)
+
+Provide answer keys. Avoid fact-recall and true/false.
+
+### Phase 11: Save and Record
+
+#### 11a: Save the Article
+
+Save to `articles/YYYY-MM-DD-<descriptive-slug>.md`:
+
+```markdown
+---
+title: "Article Title"
+source_url: "https://..."
+date: "YYYY-MM-DD"
+words_used: ["word1", "word2", ...]
+difficulty: "Intermediate-Advanced"
+topic: "Technology & Society"
+target_language: "French"
+---
+
+# Article Title
+
+[Full article body with **bolded** target words]
+
+---
+
+## Translation Training
+
+### Sentence 1
+**Original:** > ...
+**Structure Analysis:** ...
+**Main Clause:** ...
+**Layered Breakdown:** ...
+**Reference Translation:** ...
+
+### Sentence 2
+(same structure)
+
+---
+
+## Full Translation (English)
+
+[Paragraph-by-paragraph English translation]
+
+---
+
+## Vocabulary Training
+
+| Word | Meaning in Context | Core Meaning(s) | Common Collocations | Usage |
+|------|-------------------|-----------------|---------------------|-------|
+| ... | ... | ... | ... | ... |
+
+---
+
+## Reading Comprehension
+
+### Vocabulary in Context
+**1.** ...
+**2.** ...
+
+### Inference
+**3.** ...
+**4.** ...
+
+### Main Idea
+**5.** ...
+
+### Answers
+1. X  2. X  3. X  4. X  5. X
+```
+
+#### 11b: Extract Keywords
+
+Identify 10-20 topic-significant keywords from the rewritten article for future dedup.
+
+#### 11c: Update Counters and History
+
+```bash
+PYTHONIOENCODING=utf-8 python tools/count-words.py \
+  --words '["word1","word2",...]' \
+  --title "Article Title" \
+  --url "https://original-source-url" \
+  --article-id "YYYY-MM-DD-slug" \
+  --keywords "keyword1,keyword2,..."
+```
+
+---
+
+## Final Checklist
+
+- [ ] Dedup check passed (Phase 4)
+- [ ] Article reads authentically (not a vocab exercise)
+- [ ] 3-5 long sentences with multiple clause types
+- [ ] Translation section with structural analysis
+- [ ] Vocabulary table covers all used words
+- [ ] Reading questions are inference/vocab-in-context
+- [ ] Article saved + counters updated

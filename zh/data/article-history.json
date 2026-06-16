@@ -1,0 +1,44 @@
+{
+  "used_urls": [
+    "https://example.com/test-2",
+    "https://example.com/climate-test"
+  ],
+  "articles": [
+    {
+      "id": "2026-06-16-test-2",
+      "title": "Second Test",
+      "source_url": "https://example.com/test-2",
+      "date": "2026-06-16",
+      "words_used": [
+        "acute",
+        "advent",
+        "adverse",
+        "advocate",
+        "aesthetic"
+      ]
+    },
+    {
+      "id": "2026-06-16-climate-test",
+      "title": "Climate Policy Test",
+      "source_url": "https://example.com/climate-test",
+      "date": "2026-06-16",
+      "words_used": [
+        "carbon",
+        "climate",
+        "emission"
+      ],
+      "keywords": [
+        "carbon",
+        "climate",
+        "emission",
+        "greenhouse",
+        "mitigation",
+        "policy",
+        "renewable",
+        "subsidies",
+        "taxation",
+        "trading"
+      ]
+    }
+  ]
+}

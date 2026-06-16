@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word Triage — Vocabulary Classifier</title>
+<link rel="stylesheet" href="../word-triage/style.css">
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>📚 Word Triage</h1>
+    <p class="subtitle">Quickly classify your word list into Familiar and Unfamiliar</p>
+  </header>
+
+  <!-- Step 0: Regex config status -->
+  <div id="setup-panel" class="panel">
+    <div class="setup-row">
+      <label>Regex config:</label>
+      <span id="regex-status" class="status-badge loading">Loading...</span>
+      <span id="regex-display" class="regex-text"></span>
+    </div>
+    <div class="setup-row" id="manual-regex-row" style="display:none">
+      <label>Enter regex manually:</label>
+      <input type="text" id="manual-regex" placeholder="^(\S+)\s+(.+)$" />
+      <button id="apply-regex-btn">Apply</button>
+    </div>
+  </div>
+
+  <!-- Step 1: Load word list file -->
+  <div id="load-panel" class="panel">
+    <label class="file-label" for="wordlist-file">
+      📂 Choose Word List File
+      <input type="file" id="wordlist-file" accept=".txt,.csv,.tsv" />
+    </label>
+    <span id="file-name" class="file-name"></span>
+    <span id="parse-result" class="parse-result"></span>
+  </div>
+
+  <!-- Step 2: Card interface (hidden until file loaded) -->
+  <div id="card-panel" class="panel hidden">
+    <!-- Progress -->
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="progress-bar"></div>
+      <span class="progress-text" id="progress-text">0 / 0</span>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <span class="stat familiar">✅ Familiar: <strong id="familiar-count">0</strong></span>
+      <span class="stat unfamiliar">❌ Unfamiliar: <strong id="unfamiliar-count">0</strong></span>
+      <span class="stat remaining">📋 Remaining: <strong id="remaining-count">0</strong></span>
+    </div>
+
+    <!-- Word Card -->
+    <div class="card-container">
+      <div class="card" id="word-card">
+        <div class="card-front">
+          <span class="word-text" id="word-text"></span>
+          <span class="hint">Click to reveal meaning</span>
+        </div>
+        <div class="card-back">
+          <span class="meaning-text" id="meaning-text"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="actions">
+      <button class="btn btn-unfamiliar" id="btn-unfamiliar" title="Shortcut: ←">
+        ❌ Unfamiliar <kbd>←</kbd>
+      </button>
+      <button class="btn btn-familiar" id="btn-familiar" title="Shortcut: →">
+        ✅ Familiar <kbd>→</kbd>
+      </button>
+    </div>
+
+    <div class="skip-row">
+      <button class="btn btn-skip" id="btn-skip" title="Shortcut: ↓">
+        ⏭ Skip (decide later) <kbd>↓</kbd>
+      </button>
+      <button class="btn btn-undo" id="btn-undo" title="Shortcut: Ctrl+Z">
+        ↩ Undo <kbd>Ctrl+Z</kbd>
+      </button>
+    </div>
+
+    <p class="shortcuts-help">
+      Shortcuts: <kbd>←</kbd> Unfamiliar &nbsp; <kbd>→</kbd> Familiar &nbsp; <kbd>Space</kbd> Flip &nbsp; <kbd>↓</kbd> Skip
+    </p>
+  </div>
+
+  <!-- Step 3: Done panel -->
+  <div id="done-panel" class="panel hidden">
+    <h2>🎉 Classification Complete!</h2>
+    <div class="done-stats">
+      <p>✅ Familiar: <strong id="done-familiar">0</strong></p>
+      <p>❌ Unfamiliar: <strong id="done-unfamiliar">0</strong></p>
+      <p>⏭ Skipped: <strong id="done-skipped">0</strong></p>
+    </div>
+    <div class="export-buttons">
+      <button class="btn btn-export" id="btn-export-familiar">📥 Export Familiar</button>
+      <button class="btn btn-export" id="btn-export-unfamiliar">📥 Export Unfamiliar</button>
+      <button class="btn btn-export" id="btn-export-both">📥 Export Both</button>
+    </div>
+    <button class="btn btn-restart" id="btn-restart">🔄 Start Over</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word Triage — 词表分类工具</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>📚 Word Triage</h1>
+    <p class="subtitle">快速过一遍词表，划分为「熟悉」和「不熟悉」两类</p>
+  </header>
+
+  <!-- Step 0: Regex config status -->
+  <div id="setup-panel" class="panel">
+    <div class="setup-row">
+      <label>正则式配置：</label>
+      <span id="regex-status" class="status-badge loading">加载中...</span>
+      <span id="regex-display" class="regex-text"></span>
+    </div>
+    <div class="setup-row" id="manual-regex-row" style="display:none">
+      <label>手动输入正则式：</label>
+      <input type="text" id="manual-regex" placeholder="^(\S+)\s+(.+)$" />
+      <button id="apply-regex-btn">应用</button>
+    </div>
+  </div>
+
+  <!-- Step 1: Load word list file -->
+  <div id="load-panel" class="panel">
+    <label class="file-label" for="wordlist-file">
+      📂 选择词表文件
+      <input type="file" id="wordlist-file" accept=".txt,.csv,.tsv" />
+    </label>
+    <span id="file-name" class="file-name"></span>
+    <span id="parse-result" class="parse-result"></span>
+  </div>
+
+  <!-- Step 2: Card interface (hidden until file loaded) -->
+  <div id="card-panel" class="panel hidden">
+    <!-- Progress -->
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="progress-bar"></div>
+      <span class="progress-text" id="progress-text">0 / 0</span>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <span class="stat familiar">✅ 熟悉：<strong id="familiar-count">0</strong></span>
+      <span class="stat unfamiliar">❌ 不熟悉：<strong id="unfamiliar-count">0</strong></span>
+      <span class="stat remaining">📋 剩余：<strong id="remaining-count">0</strong></span>
+    </div>
+
+    <!-- Word Card -->
+    <div class="card-container">
+      <div class="card" id="word-card">
+        <div class="card-front">
+          <span class="word-text" id="word-text"></span>
+          <span class="hint">点击翻转查看释义</span>
+        </div>
+        <div class="card-back">
+          <span class="meaning-text" id="meaning-text"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="actions">
+      <button class="btn btn-unfamiliar" id="btn-unfamiliar" title="快捷键：←">
+        ❌ 不熟悉 <kbd>←</kbd>
+      </button>
+      <button class="btn btn-familiar" id="btn-familiar" title="快捷键：→">
+        ✅ 熟悉 <kbd>→</kbd>
+      </button>
+    </div>
+
+    <div class="skip-row">
+      <button class="btn btn-skip" id="btn-skip" title="快捷键：↓">
+        ⏭ 跳过（稍后再判）<kbd>↓</kbd>
+      </button>
+      <button class="btn btn-undo" id="btn-undo" title="快捷键：Ctrl+Z">
+        ↩ 撤销 <kbd>Ctrl+Z</kbd>
+      </button>
+    </div>
+
+    <p class="shortcuts-help">
+      快捷键：<kbd>←</kbd> 不熟悉 &nbsp; <kbd>→</kbd> 熟悉 &nbsp; <kbd>Space</kbd> 翻转 &nbsp; <kbd>↓</kbd> 跳过
+    </p>
+  </div>
+
+  <!-- Step 3: Done panel -->
+  <div id="done-panel" class="panel hidden">
+    <h2>🎉 分类完成！</h2>
+    <div class="done-stats">
+      <p>✅ 熟悉：<strong id="done-familiar">0</strong> 个</p>
+      <p>❌ 不熟悉：<strong id="done-unfamiliar">0</strong> 个</p>
+      <p>⏭ 跳过：<strong id="done-skipped">0</strong> 个</p>
+    </div>
+    <div class="export-buttons">
+      <button class="btn btn-export" id="btn-export-familiar">📥 导出熟悉词表</button>
+      <button class="btn btn-export" id="btn-export-unfamiliar">📥 导出不熟悉词表</button>
+      <button class="btn btn-export" id="btn-export-both">📥 导出全部</button>
+    </div>
+    <button class="btn btn-restart" id="btn-restart">🔄 重新开始</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
