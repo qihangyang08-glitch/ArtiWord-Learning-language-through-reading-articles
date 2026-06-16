@@ -25,10 +25,23 @@ if [ ! -d "$USER_SKILLS" ]; then
     mkdir -p "$USER_SKILLS"
 fi
 
+# --- Check language configuration ---
+echo ""
+echo "[CONFIG] Checking language configuration..."
+SRC_SKILLS="${VERSION_ROOT}/.claude/skills"
+if [ ! -f "${VERSION_ROOT}/config.json" ]; then
+    echo "  [WARN] No config found. Running configure.py..."
+    python3 "${VERSION_ROOT}/configure.py" || python "${VERSION_ROOT}/configure.py"
+fi
+if [ ! -f "${SRC_SKILLS}/init-wordlist.md" ]; then
+    echo "  [WARN] Skill files not generated. Running configure.py..."
+    python3 "${VERSION_ROOT}/configure.py" || python "${VERSION_ROOT}/configure.py"
+fi
+echo "  [OK] Skills ready"
+
 # --- Copy skill files ---
 echo ""
 echo "[INSTALL] Copying skills to user directory..."
-SRC_SKILLS="${VERSION_ROOT}/.claude/skills"
 
 for skill in init-wordlist.md generate-article.md; do
     if [ -f "${SRC_SKILLS}/${skill}" ]; then

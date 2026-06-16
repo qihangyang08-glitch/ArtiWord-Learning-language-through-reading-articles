@@ -8,7 +8,19 @@ Generate authentic articles in your target language that seamlessly embed vocabu
 
 ## Quick Start
 
-### 1. Install
+### 1. Configure Your Languages
+
+```bash
+python configure.py
+```
+
+You'll be asked:
+- **Your native language** (e.g., English, Japanese, Spanish)
+- **Language you're learning** (e.g., French, German, Korean)
+
+This generates the skill files with your language pair embedded. Re-run anytime to change languages.
+
+### 2. Install
 
 ```bash
 # Windows
@@ -18,9 +30,9 @@ install.bat
 bash install.sh
 ```
 
-Skills are copied to `~/.claude/skills/` — available from any directory in Claude Code.
+The installer checks your config, generates skills if needed, and copies them to `~/.claude/skills/`.
 
-### 2. Initialize Your Word List
+### 3. Initialize Your Word List
 
 In Claude Code:
 
@@ -30,7 +42,7 @@ In Claude Code:
 
 Provide your word list file. The skill auto-detects the format, configures the regex, self-tests, and opens the web tool in your browser.
 
-### 3. Triage Your Words
+### 4. Triage Your Words
 
 Browser opens to `http://localhost:8080/tools/word-triage/`:
 - Load your word list file
@@ -38,13 +50,13 @@ Browser opens to `http://localhost:8080/tools/word-triage/`:
 - `←` Unfamiliar / `→` Familiar / `Space` Flip / `↓` Skip
 - Export `familiar.txt` and `unfamiliar.txt` → place in `data/`
 
-### 4. Generate Articles
+### 5. Generate Articles
 
 ```
 /generate-article
 ```
 
-The skill will ask which language you're learning, then:
+The skill uses your configured language pair automatically, then:
 1. Extract 200 words (low-frequency first) from your unfamiliar list
 2. Search authentic articles **in your target language**
 3. **Run dedup check** against previously used articles

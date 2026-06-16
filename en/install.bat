@@ -27,6 +27,24 @@ if not exist "%USER_SKILLS%" (
     mkdir "%USER_SKILLS%" 2>nul
 )
 
+REM --- Check language configuration ---
+echo.
+echo [CONFIG] Checking language configuration...
+if not exist "%VERSION_ROOT%config.json" (
+    echo   [WARN] No config found. Running configure.py...
+    python "%VERSION_ROOT%configure.py"
+    if %errorlevel% neq 0 (
+        echo   [ERROR] Configuration failed. Aborting.
+        pause
+        exit /b 1
+    )
+)
+if not exist "%SRC_SKILLS%\init-wordlist.md" (
+    echo   [WARN] Skill files not generated. Running configure.py...
+    python "%VERSION_ROOT%configure.py"
+)
+echo   [OK] Skills ready
+
 REM --- Copy skill files ---
 echo.
 echo [INSTALL] Copying skills to user directory...

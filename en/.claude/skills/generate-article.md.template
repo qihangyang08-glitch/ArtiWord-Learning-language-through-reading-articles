@@ -21,7 +21,7 @@ All project scripts handle this internally.
 Generate ONE article that serves ALL of:
 1. Vocabulary acquisition (target words in natural context)
 2. Long-sentence analysis practice
-3. Translation training (French ↔ English)
+3. Translation training ({{TARGET}} ↔ {{NATIVE}})
 4. Reading comprehension
 
 The article must read like authentic published writing — never like a vocabulary exercise.
@@ -32,17 +32,17 @@ The article must read like authentic published writing — never like a vocabula
 
 ### Phase 0: Confirm Language Configuration
 
-The user has configured: **Native = English, Target = French**.
+The user has configured: **Native = {{NATIVE}}, Target = {{TARGET}}**.
 
-Confirm this with the user: *"I'll generate an article in **French** with translations to **English**. Is that correct?"*
+Confirm this with the user: *"I'll generate an article in **{{TARGET}}** with translations to **{{NATIVE}}**. Is that correct?"*
 
 If the user wants to change languages, tell them to re-run `python configure.py`.
 
 Adjust all subsequent steps accordingly:
-- Source article language = French
-- Translation direction = French ↔ English
-- Vocabulary table headings = in English
-- Question language = English
+- Source article language = {{TARGET}}
+- Translation direction = {{TARGET}} ↔ {{NATIVE}}
+- Vocabulary table headings = in {{NATIVE}}
+- Question language = {{NATIVE}}
 
 ### Phase 1: Environment Check
 
@@ -129,11 +129,11 @@ Select the 2 hardest sentences. For each, provide:
 2. Sentence structure analysis
 3. Main clause extraction
 4. Layered syntactic breakdown
-5. Reference English translation
+5. Reference {{NATIVE}} translation
 
 ### Phase 8: Full Translation
 
-Paragraph-by-paragraph English translation of the entire article.
+Paragraph-by-paragraph {{NATIVE}} translation of the entire article.
 
 ### Phase 9: Vocabulary Training Section
 
@@ -165,7 +165,7 @@ date: "YYYY-MM-DD"
 words_used: ["word1", "word2", ...]
 difficulty: "Intermediate-Advanced"
 topic: "Technology & Society"
-target_language: "French"
+target_language: "{{TARGET}}"
 ---
 
 # Article Title
@@ -188,9 +188,9 @@ target_language: "French"
 
 ---
 
-## Full Translation (English)
+## Full Translation ({{NATIVE}})
 
-[Paragraph-by-paragraph English translation]
+[Paragraph-by-paragraph {{NATIVE}} translation]
 
 ---
 
