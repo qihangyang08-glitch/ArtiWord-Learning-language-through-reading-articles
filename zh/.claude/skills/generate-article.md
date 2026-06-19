@@ -31,7 +31,7 @@ Generate ONE article that serves ALL of:
 3. Translation training (Chinese↔English)
 4. Reading comprehension (inference, vocabulary-in-context, main idea)
 
-The article must read like authentic published writing — never like a vocabulary exercise.
+The article must read like authentic published writing — never just like a vocabulary exercise.
 
 ---
 
@@ -63,16 +63,17 @@ PYTHONIOENCODING=utf-8 python tools/extract-words.py --count 200 --exclude word1
 
 Pass previously extracted words to `--exclude`. Call 2-3 times max — the script's purpose is to avoid context overflow, not to exhaust the word list.
 
-### Phase 2: Search for Source Article
+### Phase 2: Multi-Search for Source Articles
 
-Use WebSearch to find an authentic English article.
+Use WebSearch to find **3-5 candidate articles**. Bias towards **recently published** articles (current year preferred). Search with diverse keywords to get different angles.
 
 **Source quality requirements:**
 - Outlets: The Economist, The Guardian, BBC Future, Scientific American, Aeon, Nautilus, MIT Technology Review, Nature News, NYT (science/ideas sections)
 - Type: Opinion/analysis/feature essays — NOT straight news reports
-- Length: 400-800 words
 
-**Topic selection — choose ONLY from these categories:**
+**Topic reference (for guidance only — NOT a filter):**
+
+The categories below are **suggestions for search direction**. An article does NOT need to fit any category perfectly. Do NOT reject an article just because its topic is outside this list. As long as the article is substantial and analytical, it's eligible.
 
 | Category | Sub-topics |
 |----------|------------|
@@ -84,36 +85,46 @@ Use WebSearch to find an authentic English article.
 
 **AVOID:** fiction, fantasy, military, celebrity gossip, sports news, entertainment reporting.
 
-### Phase 3: Dedup Check (MANDATORY)
+**No word-count filter:** Do not filter by article length. Quality is the only criterion. You will trim, excerpt, or expand the article to the target length during rewriting.
 
-**You MUST run the dedup check before proceeding with any article.** This prevents wasting effort on duplicate content.
+Fetch full text of all candidates with WebFetch.
 
-After finding a candidate article via WebSearch and fetching its full text with WebFetch:
+### Phase 3: Batch Dedup Check (MANDATORY)
+
+**Check ALL candidates at once** against article history using the batch mode:
 
 ```bash
-PYTHONIOENCODING=utf-8 python tools/check-similarity.py \
-  --title "CANDIDATE_ARTICLE_TITLE" \
-  --text "CANDIDATE_ARTICLE_FULL_TEXT"
+PYTHONIOENCODING=utf-8 python tools/check-similarity.py --batch '[
+  {"title": "Title 1", "text": "Full text of article 1..."},
+  {"title": "Title 2", "text": "Full text of article 2..."},
+  {"title": "Title 3", "text": "Full text of article 3..."}
+]'
 ```
 
-The script outputs a JSON with `recommendation` field:
+The script returns a `ranked_by_safety` list (lowest similarity score = safest = best candidate).
 
-| Recommendation | Action |
-|----------------|--------|
-| `safe` | Proceed to Phase 4 |
-| `review_needed` | Read the `matches` array. Each match has `overlap_keywords` and `score`. **You (the LLM) judge**: do these articles cover the same story/argument? If yes → skip this article, search again. If merely same broad topic but different angle → you may proceed. |
-| `likely_duplicate` | **Skip this article immediately.** Search for a different one, then re-run Phase 3. |
+**Select the best candidate:**
+1. Pick the highest-ranked article from `ranked_by_safety`
+2. If the best article is `likely_duplicate` (top_score ≥ 0.5), skip it and check the next
+3. If all candidates are `likely_duplicate`, search for a fresh batch and re-run Phase 3
 
-If you skip an article, search for a different one and re-run Phase 3. You must not use an article that is `likely_duplicate`.
+| Best Candidate Recommendation | Action |
+|-------------------------------|--------|
+| `safe` (top_score < 0.2) | Proceed to Phase 4 |
+| `review_needed` (0.2 ≤ top_score < 0.5) | Read the `matches` — LLM judges if same story/argument. If yes → pick next candidate. If merely same broad topic → you may proceed. |
+| `likely_duplicate` (top_score ≥ 0.5) | Skip this candidate, try the next one in the ranking |
 
 ### Phase 4: Assess Vocabulary Overlap
 
-From the candidate article, assess:
-1. How many target words naturally appear in or fit the article's topic
-2. Whether the article has complex sentence structures
-3. Whether it argues a position (not just reports facts)
+From the selected candidate article, estimate how many target words naturally fit the article's topic and context.
 
-If overlap is poor (< 10 potential words), re-run Phase 1 with `--exclude` and search again.
+If overlap is poor (< 10 potential fitting words), **simply re-run Phase 1 with `--exclude`** to get fresh words, then return to Phase 4 with the same article. Do NOT search for a new article — a quality article with fresh words is better than a mediocre article with high overlap.
+
+```bash
+PYTHONIOENCODING=utf-8 python tools/extract-words.py --count 200 --exclude word1,word2,word3,...
+```
+
+Call 2-3 times max.
 
 ### Phase 5: Rewrite the Article
 
@@ -156,9 +167,19 @@ Follow real journalistic argumentation patterns — don't make it formulaic.
 
 #### Long Sentence Design
 
-Include **3-5 long sentences** suitable for translation practice.
+Include **3-5 long sentences** suitable for translation practice. These are the core of the translation training section.
 
-Each long sentence must combine **multiple** of:
+**Finding and marking long sentences:**
+
+1. **Look for naturally complex sentences** in the rewritten article — sentences with multiple clause types, layered modifiers, or sophisticated logic.
+2. **Mark each long sentence** in the article body using markdown underline syntax:
+   ```
+   ___This is a long, complex sentence suitable for translation practice.___
+   ```
+   Alternatively, wrap them in `[square brackets]` if the article style prefers.
+3. **If the article lacks sufficiently difficult sentences** (most naturally written articles won't reach CET-6 / postgraduate exam translation difficulty), **manually rewrite or insert** complex sentences. The article's natural flow must still be maintained — rewritten sentences must read as if an editor polished them, not as grammar exercises.
+
+**Each long sentence must combine multiple of:**
 - Relative clauses (defining + non-defining)
 - Appositive phrases
 - Parenthetical structures (dashes, brackets)
@@ -289,16 +310,21 @@ Keywords should be: lowercase, singular form, topic-significant nouns and verbs.
 
 #### 10c: Update Counters and History
 
+The script **automatically detects target words** from the article's frontmatter `words_used` field (which you wrote in 10a) and cross-references them with the word list. You do NOT need to manually list words.
+
 ```bash
 PYTHONIOENCODING=utf-8 python tools/count-words.py \
-  --words '["word1","word2","word3",...]' \
+  --article-file "articles/YYYY-MM-DD-descriptive-slug.md" \
   --title "Article Title" \
   --url "https://original-source-url" \
   --article-id "YYYY-MM-DD-descriptive-slug" \
   --keywords "keyword1,keyword2,keyword3,..."
 ```
 
-This increments usage counters (lowering priority for next extraction), records the source URL, and stores keywords for future similarity checks.
+This automatically:
+1. Reads the article file and extracts `words_used` from frontmatter
+2. Increments usage counters for each detected word (lowering priority for future extraction)
+3. Records the source URL and keywords in article history for future dedup checks
 
 ---
 
@@ -306,13 +332,13 @@ This increments usage counters (lowering priority for next extraction), records 
 
 Before finishing, verify:
 
-- [ ] Phase 3 dedup check passed (not a duplicate)
+- [ ] Phase 3 batch dedup check passed (not a duplicate — best candidate selected)
 - [ ] Article reads like authentic published English (not a vocab exercise)
 - [ ] Uncommon meanings are prioritized where natural
-- [ ] 3-5 long sentences (30-60 words) with multiple clause types
-- [ ] Translation section has structural analysis for 2 sentences
+- [ ] 3-5 long sentences marked with `___...___` or rewritten to add difficulty
+- [ ] Translation section has structural analysis for 2 hardest sentences
 - [ ] Vocabulary table covers all used target words with collocations
 - [ ] Reading questions are inference/vocab-in-context style (not fact recall)
-- [ ] Article saved to `articles/` with correct frontmatter
+- [ ] Article saved to `articles/` with correct frontmatter (including `words_used`)
 - [ ] Keywords extracted and passed to `count-words.py --keywords`
-- [ ] `count-words.py` ran successfully
+- [ ] `count-words.py --article-file` ran successfully (auto-detected words)

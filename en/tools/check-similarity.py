@@ -7,16 +7,29 @@ using keyword Jaccard similarity + title overlap. Outputs a recommendation
 for the LLM to make the final duplicate decision.
 
 Usage:
+    # Single article check
     python check-similarity.py --title "New Title" --text "Article body..."
-
     python check-similarity.py --title "New Title" --text "..." --threshold 0.3
-
     python check-similarity.py --file articles/2026-06-16-slug.md
 
-Output:
+    # Batch mode: check multiple candidates, rank by similarity
+    python check-similarity.py --batch '[{"title":"A","text":"..."},{"title":"B","text":"..."}]'
+    python check-similarity.py --batch-file candidates.json
+
+Output (single):
     {
       "matches": [...],
       "recommendation": "safe" | "review_needed" | "likely_duplicate"
+    }
+
+Output (batch):
+    {
+      "candidates": [
+        {"title": "...", "score": 0.05, "recommendation": "safe", "matches": [...]},
+        ...
+      ],
+      "best": {...},
+      "ranked_by_safety": ["title1", "title2", ...]
     }
 """
 
@@ -133,6 +146,7 @@ def check_similarity(new_title, new_text, history_path, threshold=0.15):
             'matches': [],
             'recommendation': 'safe',
             'note': 'No previous articles in history',
+            'top_score': 0.0,
         }
 
     new_keywords = set(extract_keywords(new_text))
@@ -186,8 +200,51 @@ def check_similarity(new_title, new_text, history_path, threshold=0.15):
 
     if matches:
         result['top_score'] = round(matches[0]['score'], 3)
+    else:
+        result['top_score'] = 0.0
 
     return result
+
+
+def check_batch(candidates, history_path, threshold=0.15):
+    """
+    Check multiple candidates against history.
+    candidates: list of {"title": str, "text": str}
+    Returns ranked results with best (lowest similarity) first.
+    """
+    results = []
+    for c in candidates:
+        title = c.get('title', 'Untitled')
+        text = c.get('text', '')
+        if not text.strip():
+            results.append({
+                'title': title,
+                'error': 'No text provided',
+                'score': 1.0,
+                'recommendation': 'error',
+                'matches': [],
+            })
+            continue
+
+        r = check_similarity(title, text, history_path, threshold)
+        results.append({
+            'title': title,
+            'score': r['top_score'],
+            'recommendation': r['recommendation'],
+            'matches': r['matches'],
+            'total_checked': r['total_articles_checked'],
+        })
+
+    # Sort by score ascending (lowest similarity = safest = best)
+    ranked = sorted(results, key=lambda x: x['score'])
+
+    output = {
+        'candidates': results,
+        'best': ranked[0] if ranked else None,
+        'ranked_by_safety': [r['title'] for r in ranked],
+    }
+
+    return output
 
 
 def main():
@@ -195,7 +252,7 @@ def main():
         description='Article similarity checker for deduplication'
     )
     parser.add_argument(
-        '--title', '-t', type=str, required=True,
+        '--title', '-t', type=str, default='',
         help='Title of the candidate article'
     )
     parser.add_argument(
@@ -215,9 +272,37 @@ def main():
         default=resolve_path('data/article-history.json'),
         help='Path to article history JSON'
     )
+    parser.add_argument(
+        '--batch', '-b', type=str, default='',
+        help='JSON string of candidate array: [{"title":"...","text":"..."},...]'
+    )
+    parser.add_argument(
+        '--batch-file', type=str, default='',
+        help='Path to JSON file with candidate array'
+    )
 
     args = parser.parse_args()
 
+    # Batch mode
+    if args.batch or args.batch_file:
+        if args.batch_file:
+            if not os.path.exists(args.batch_file):
+                print(f"Error: Batch file not found: {args.batch_file}", file=sys.stderr)
+                sys.exit(1)
+            with open(args.batch_file, 'r', encoding='utf-8') as f:
+                candidates = json.loads(f.read())
+        else:
+            candidates = json.loads(args.batch)
+
+        if not isinstance(candidates, list):
+            print("Error: --batch must be a JSON array.", file=sys.stderr)
+            sys.exit(1)
+
+        result = check_batch(candidates, args.history, args.threshold)
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return
+
+    # Single mode
     title = args.title
     text = args.text
 
@@ -237,7 +322,7 @@ def main():
             sys.exit(1)
 
     if not text.strip():
-        print("Error: No text provided. Use --text or --file.", file=sys.stderr)
+        print("Error: No text provided. Use --text, --file, --batch, or --batch-file.", file=sys.stderr)
         sys.exit(1)
 
     result = check_similarity(title, text, args.history, args.threshold)

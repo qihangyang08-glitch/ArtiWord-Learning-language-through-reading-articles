@@ -1,43 +1,123 @@
 {
   "used_urls": [
-    "https://example.com/test-2",
-    "https://example.com/climate-test"
+    "https://www.theguardian.com/commentisfree/2026/jun/08/climate-equality",
+    "https://www.theguardian.com/commentisfree/2026/may/04/green-transition",
+    "https://www.theguardian.com/commentisfree/2026/mar/09/energy-vulnerability",
+    "https://www.economist.com/business/2026/06/15/greenhushing",
+    "https://example.com/test-counter"
   ],
   "articles": [
     {
-      "id": "2026-06-16-test-2",
-      "title": "Second Test",
-      "source_url": "https://example.com/test-2",
-      "date": "2026-06-16",
-      "words_used": [
-        "acute",
-        "advent",
-        "adverse",
-        "advocate",
-        "aesthetic"
+      "id": "2026-06-01-climate-equality",
+      "title": "Climate Equality: A Richer Life and Real Public Abundance",
+      "source_url": "https://www.theguardian.com/commentisfree/2026/jun/08/climate-equality",
+      "date": "2026-06-01",
+      "words_used": [],
+      "keywords": [
+        "climate",
+        "equality",
+        "carbon",
+        "emissions",
+        "renewable",
+        "energy",
+        "greenhouse",
+        "taxation",
+        "wealth",
+        "sustainability",
+        "policy",
+        "transition",
+        "solar",
+        "wind",
+        "fossil"
       ]
     },
     {
-      "id": "2026-06-16-climate-test",
-      "title": "Climate Policy Test",
-      "source_url": "https://example.com/climate-test",
-      "date": "2026-06-16",
-      "words_used": [
+      "id": "2026-06-05-green-transition",
+      "title": "The Green Transition: Politicians Should Speed It Up",
+      "source_url": "https://www.theguardian.com/commentisfree/2026/may/04/green-transition",
+      "date": "2026-06-05",
+      "words_used": [],
+      "keywords": [
+        "green",
+        "transition",
+        "renewable",
+        "energy",
+        "solar",
+        "wind",
+        "grid",
+        "storage",
         "carbon",
+        "policy",
         "climate",
-        "emission"
+        "emissions",
+        "hydrogen",
+        "battery",
+        "fossil"
+      ]
+    },
+    {
+      "id": "2026-06-10-energy-security",
+      "title": "Iran Crisis Exposes Energy Vulnerability: Clean Power Offers Protection",
+      "source_url": "https://www.theguardian.com/commentisfree/2026/mar/09/energy-vulnerability",
+      "date": "2026-06-10",
+      "words_used": [],
+      "keywords": [
+        "energy",
+        "security",
+        "fossil",
+        "fuel",
+        "renewable",
+        "solar",
+        "wind",
+        "nuclear",
+        "hydrogen",
+        "oil",
+        "gas",
+        "climate",
+        "transition",
+        "efficiency",
+        "geopolitical"
+      ]
+    },
+    {
+      "id": "2026-06-15-greenhushing",
+      "title": "The Remarkable Rise of Greenhushing: Companies Quietly Pursue Climate Goals",
+      "source_url": "https://www.economist.com/business/2026/06/15/greenhushing",
+      "date": "2026-06-15",
+      "words_used": [],
+      "keywords": [
+        "greenhushing",
+        "corporate",
+        "climate",
+        "emissions",
+        "carbon",
+        "sustainability",
+        "renewable",
+        "energy",
+        "transition",
+        "decarbonization",
+        "business",
+        "green",
+        "investment",
+        "policy"
+      ]
+    },
+    {
+      "id": "2026-06-20-test-counter",
+      "title": "Test Article for Counter Check",
+      "source_url": "https://example.com/test-counter",
+      "date": "2026-06-20",
+      "words_used": [
+        "character",
+        "command",
+        "demonstrate",
+        "inexpensive",
+        "omit"
       ],
       "keywords": [
-        "carbon",
-        "climate",
-        "emission",
-        "greenhouse",
-        "mitigation",
-        "policy",
-        "renewable",
-        "subsidies",
-        "taxation",
-        "trading"
+        "counter",
+        "demonstration",
+        "test"
       ]
     }
   ]
