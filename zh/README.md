@@ -28,11 +28,21 @@ Skills 会被复制到 `~/.claude/skills/`，任意目录下都能使用。
 /init-wordlist
 ```
 
-提供你的考纲词表文件（如 CET6.txt），Skill 自动识别格式、配置正则式、自我测试、并打开网页工具。
+提供你的考纲词表文件（如 CET6.txt），Skill 自动识别格式、配置正则式并自我测试，最后汇报配置结果。
 
 ### 3. 词卡分类
 
-浏览器自动打开 `http://localhost:8080/tools/word-triage/`：
+运行 `/init-wordlist` 后，手动启动本地服务器：
+
+```bash
+# Windows
+serve.bat
+
+# macOS / Linux
+bash serve.sh
+```
+
+然后浏览器打开 `http://localhost:8080/tools/word-triage/`：
 - 加载词表文件
 - 单击卡片翻转查看释义
 - `←` 不熟悉 / `→` 熟悉 / `空格` 翻转 / `↓` 跳过

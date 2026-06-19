@@ -40,11 +40,21 @@ In Claude Code:
 /init-wordlist
 ```
 
-Provide your word list file. The skill auto-detects the format, configures the regex, self-tests, and opens the web tool in your browser.
+Provide your word list file. The skill auto-detects the format, configures the regex, self-tests, and reports the configuration results.
 
 ### 4. Triage Your Words
 
-Browser opens to `http://localhost:8080/tools/word-triage/`:
+After running `/init-wordlist`, start the local server manually:
+
+```bash
+# Windows
+serve.bat
+
+# macOS / Linux
+bash serve.sh
+```
+
+Then open `http://localhost:8080/tools/word-triage/` in your browser:
 - Load your word list file
 - Click card to flip and see the definition
 - `←` Unfamiliar / `→` Familiar / `Space` Flip / `↓` Skip

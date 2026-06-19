@@ -1,85 +1,111 @@
 @echo off
-chcp 65001 >nul
+chcp 65001 >nul 2>&1
 echo ============================================
-echo   Word-Lerning (Chinese) — One-Click Install
+echo   Word-Lerning (Chinese) - One-Click Install
 echo ============================================
 echo.
+
+REM --- Detect script directory (works even if run from elsewhere) ---
+set "SCRIPT_DIR=%~dp0"
+set "SCRIPT_DIR=%SCRIPT_DIR:~0,-1%"
+echo [INFO] Install directory: %SCRIPT_DIR%
 
 REM --- Check Python ---
 python --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [ERROR] Python not found. Please install Python 3.7+ first.
-    echo         Download: https://www.python.org/downloads/
+    echo [ERROR] Python not found. Install Python 3.7+ first.
+    echo         https://www.python.org/downloads/
     pause
     exit /b 1
 )
-echo [OK] Python found
-python --version
+for /f "tokens=*" %%i in ('python --version 2^>^&1') do echo [OK] Python: %%i
 
-REM --- Detect project root ---
-set "PROJECT_ROOT=%~dp0"
-echo [INFO] Project root: %PROJECT_ROOT%
-
-REM --- Find Claude Code user skills directory ---
+REM --- Find Claude Code skills directory ---
+REM Try user-level skills first, then project-level
 set "USER_SKILLS=%USERPROFILE%\.claude\skills"
+echo [INFO] Skills target: %USER_SKILLS%
+
 if not exist "%USER_SKILLS%" (
-    echo [INFO] Creating user skills directory: %USER_SKILLS%
+    echo [INFO] Creating directory...
     mkdir "%USER_SKILLS%" 2>nul
+    if %errorlevel% neq 0 (
+        echo [ERROR] Cannot create %USER_SKILLS%
+        pause
+        exit /b 1
+    )
 )
 
-REM --- Copy skill files ---
+REM --- Locate source files ---
+set "SRC_SKILLS=%SCRIPT_DIR%\.claude\skills"
+echo [INFO] Source skills: %SRC_SKILLS%
+
+if not exist "%SRC_SKILLS%\init-wordlist.md" (
+    echo [ERROR] Source skill not found: init-wordlist.md
+    echo         Make sure you run this from the zh/ directory.
+    pause
+    exit /b 1
+)
+
+REM --- Copy skills (must be DIR/SKILL.md for Claude Code) ---
 echo.
-echo [INSTALL] Copying skills to user directory...
-set "SRC_SKILLS=%PROJECT_ROOT%.claude\skills"
+echo [INSTALL] Installing skills...
 
-copy /Y "%SRC_SKILLS%\init-wordlist.md" "%USER_SKILLS%\" >nul 2>&1
-if %errorlevel% equ 0 (echo   [OK] init-wordlist.md) else (echo   [FAIL] init-wordlist.md)
+mkdir "%USER_SKILLS%\init-wordlist" 2>nul
+copy /Y "%SRC_SKILLS%\init-wordlist.md" "%USER_SKILLS%\init-wordlist\SKILL.md" >nul 2>&1
+if %errorlevel% equ 0 (
+    echo   [OK] init-wordlist
+) else (
+    echo   [FAIL] init-wordlist - copy failed
+    set "HAD_ERROR=1"
+)
 
-copy /Y "%SRC_SKILLS%\generate-article.md" "%USER_SKILLS%\" >nul 2>&1
-if %errorlevel% equ 0 (echo   [OK] generate-article.md) else (echo   [FAIL] generate-article.md)
+mkdir "%USER_SKILLS%\generate-article" 2>nul
+copy /Y "%SRC_SKILLS%\generate-article.md" "%USER_SKILLS%\generate-article\SKILL.md" >nul 2>&1
+if %errorlevel% equ 0 (
+    echo   [OK] generate-article
+) else (
+    echo   [FAIL] generate-article - copy failed
+    set "HAD_ERROR=1"
+)
 
-REM --- Create data directories ---
+REM --- Verify ---
 echo.
-echo [INFO] Ensuring data directories exist...
-if not exist "%PROJECT_ROOT%data" mkdir "%PROJECT_ROOT%data"
-if not exist "%PROJECT_ROOT%articles" mkdir "%PROJECT_ROOT%articles"
-
-REM --- Verify installation ---
-echo.
-echo ============================================
-echo   Verification
-echo ============================================
+echo [VERIFY] Checking installation...
 
 set "ERRORS=0"
 
-REM Check project files
-if exist "%PROJECT_ROOT%tools\word-triage\index.html" (echo [OK] Web tool: index.html) else (echo [FAIL] Web tool: index.html missing & set /a ERRORS+=1)
-if exist "%PROJECT_ROOT%tools\word-triage\regex-config.txt" (echo [OK] Regex config: regex-config.txt) else (echo [FAIL] Regex config missing & set /a ERRORS+=1)
-if exist "%PROJECT_ROOT%tools\extract-words.py" (echo [OK] Script: extract-words.py) else (echo [FAIL] extract-words.py missing & set /a ERRORS+=1)
-if exist "%PROJECT_ROOT%tools\count-words.py" (echo [OK] Script: count-words.py) else (echo [FAIL] count-words.py missing & set /a ERRORS+=1)
-if exist "%PROJECT_ROOT%tools\check-similarity.py" (echo [OK] Script: check-similarity.py) else (echo [FAIL] check-similarity.py missing & set /a ERRORS+=1)
+if exist "%USER_SKILLS%\init-wordlist\SKILL.md" (
+    echo   [OK] init-wordlist
+) else (
+    echo   [FAIL] init-wordlist not installed
+    set /a ERRORS+=1
+)
 
-REM Check user skills
-if exist "%USER_SKILLS%\init-wordlist.md" (echo [OK] User skill: init-wordlist.md) else (set /a ERRORS+=1 & echo [FAIL] User skill not installed)
-if exist "%USER_SKILLS%\generate-article.md" (echo [OK] User skill: generate-article.md) else (set /a ERRORS+=1 & echo [FAIL] User skill not installed)
+if exist "%USER_SKILLS%\generate-article\SKILL.md" (
+    echo   [OK] generate-article
+) else (
+    echo   [FAIL] generate-article not installed
+    set /a ERRORS+=1
+)
 
+REM --- Result ---
 echo.
-if %ERRORS% equ 0 (
+if "%ERRORS%"=="0" (
     echo ============================================
     echo   Installation SUCCESSFUL!
     echo ============================================
     echo.
-    echo   Skills installed to: %USER_SKILLS%
+    echo   Skills are now available in Claude Code:
+    echo     /init-wordlist   - Initialize word list
+    echo     /generate-article - Generate memory article
     echo.
-    echo   To start:
-    echo     1. Run: serve.bat
-    echo     2. Open Claude Code and type: /init-wordlist
-    echo.
+    echo   Next: double-click serve.bat to start
+    echo         then use the web tool to triage words.
 ) else (
     echo ============================================
-    echo   Installation completed with %ERRORS% warning(s).
-    echo   Please check the FAIL items above.
+    echo   Installation FAILED - %ERRORS% error(s)
     echo ============================================
+    echo   Check the [FAIL] lines above.
 )
 
 pause

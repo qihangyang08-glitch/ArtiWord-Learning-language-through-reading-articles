@@ -1,6 +1,13 @@
-# Initialize Word List Regex (English)
+---
+name: init-wordlist
+description: >
+  Configure the regex pattern for the Word Triage web tool to parse
+  a vocabulary list — then report the results for the user to proceed.
+---
 
-Configure the regex pattern used by the Word Triage web tool to parse a vocabulary list — then launch the tool automatically.
+# Initialize Word List Regex
+
+Configure the regex pattern used by the Word Triage web tool to parse a vocabulary list — then report the results for the user to proceed.
 
 ---
 
@@ -143,20 +150,37 @@ sys.exit(0 if len(words) >= 10 else 1)
 "
 ```
 
-### Step 6: Launch the Web Tool
+### Step 6: Report Configuration Results
 
-```bash
-(python -c "import socket; s=socket.socket(); s.connect(('localhost',8080)); s.close(); print('RUNNING')" 2>/dev/null && echo "Server OK") || (echo "Starting..." && start "WordLerning-Server" python -m http.server 8080 --directory .)
-```
+**Do NOT launch the web tool or browser automatically.** Instead, report the following to the user in English:
 
-Open the browser:
+---
 
-```bash
-start http://localhost:8080/tools/word-triage/
-```
+**📋 Word List Configuration Report**
 
-(Use `open` on macOS, `xdg-open` on Linux.)
+- **Word list found:** `<YES/NO>` — `<file path>`
+- **Word list name:** `<filename>` (e.g., `french-vocabulary.txt`)
+- **Sorting method:** `<alphabetical / by frequency / random / by chapter / other>`
+- **Detected format:** `<tab-separated / space-separated / slash-separated / etc.>`
+- **Regex written:** `<the regex pattern>` → saved to `tools/word-triage/regex-config.txt`
 
-### Step 7: Report
+**Test results:**
+- Phase A (Full Parse): `<XX.X>%` pass rate (≥95% required)
+- Phase B (Capture Group Validation): `<N>` errors / 20 samples (0 required)
+- Phase C (Browser Simulation): `<N>` words parsed (≥10 required)
 
-Tell the user: detected format, regex written, test results (Phase A/B/C), and that the browser is open with the tool ready.
+---
+
+**Next steps you can take:**
+
+1. Start the local server:
+   ```
+   python -m http.server 8080 --directory .
+   ```
+2. Open the web tool in your browser:
+   - Windows: `start http://localhost:8080/tools/word-triage/`
+   - macOS: `open http://localhost:8080/tools/word-triage/`
+   - Linux: `xdg-open http://localhost:8080/tools/word-triage/`
+3. In the web tool, click **"Select word list file"** and load your word list to begin triage.
+4. Use keyboard shortcuts to classify words: `←` Unfamiliar, `→` Familiar, `Space` Flip, `↓` Skip.
+

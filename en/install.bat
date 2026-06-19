@@ -1,100 +1,130 @@
 @echo off
-chcp 65001 >nul
+chcp 65001 >nul 2>&1
 echo ============================================
-echo   Word-Lerning (English) — One-Click Install
+echo   Word-Lerning (English) - One-Click Install
 echo ============================================
 echo.
+
+REM --- Detect script directory ---
+set "SCRIPT_DIR=%~dp0"
+set "SCRIPT_DIR=%SCRIPT_DIR:~0,-1%"
+echo [INFO] Install directory: %SCRIPT_DIR%
 
 REM --- Check Python ---
 python --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [ERROR] Python not found. Please install Python 3.7+ first.
-    echo         Download: https://www.python.org/downloads/
+    echo [ERROR] Python not found. Install Python 3.7+ first.
+    echo         https://www.python.org/downloads/
     pause
     exit /b 1
 )
-echo [OK] Python found
-python --version
+for /f "tokens=*" %%i in ('python --version 2^>^&1') do echo [OK] Python: %%i
 
-REM --- Detect version root ---
-set "VERSION_ROOT=%~dp0"
-echo [INFO] Version root: %VERSION_ROOT%
-
-REM --- Find Claude Code user skills directory ---
+REM --- Find Claude Code skills directory ---
 set "USER_SKILLS=%USERPROFILE%\.claude\skills"
-if not exist "%USER_SKILLS%" (
-    echo [INFO] Creating user skills directory: %USER_SKILLS%
-    mkdir "%USER_SKILLS%" 2>nul
-)
+echo [INFO] Skills target: %USER_SKILLS%
 
-REM --- Check language configuration ---
-echo.
-echo [CONFIG] Checking language configuration...
-if not exist "%VERSION_ROOT%config.json" (
-    echo   [WARN] No config found. Running configure.py...
-    python "%VERSION_ROOT%configure.py"
+if not exist "%USER_SKILLS%" (
+    echo [INFO] Creating directory...
+    mkdir "%USER_SKILLS%" 2>nul
     if %errorlevel% neq 0 (
-        echo   [ERROR] Configuration failed. Aborting.
+        echo [ERROR] Cannot create %USER_SKILLS%
         pause
         exit /b 1
     )
 )
-if not exist "%SRC_SKILLS%\init-wordlist.md" (
-    echo   [WARN] Skill files not generated. Running configure.py...
-    python "%VERSION_ROOT%configure.py"
+
+REM --- Locate source files ---
+set "SRC_SKILLS=%SCRIPT_DIR%\.claude\skills"
+echo [INFO] Source skills: %SRC_SKILLS%
+
+REM --- Check / run language configuration ---
+echo.
+echo [CONFIG] Checking language setup...
+
+if not exist "%SCRIPT_DIR%\config.json" (
+    echo   [WARN] No config.json found. Running configure.py...
+    echo.
+    python "%SCRIPT_DIR%\configure.py"
+    if %errorlevel% neq 0 (
+        echo   [ERROR] configure.py failed. Run it manually:
+        echo          cd en ^&^& python configure.py
+        pause
+        exit /b 1
+    )
 )
-echo   [OK] Skills ready
 
-REM --- Copy skill files ---
+if not exist "%SRC_SKILLS%\init-wordlist.md" (
+    echo   [INFO] Generating skill files from templates...
+    python "%SCRIPT_DIR%\configure.py"
+)
+
+REM Verify skills exist now
+if not exist "%SRC_SKILLS%\init-wordlist.md" (
+    echo   [ERROR] Skill files not found after configure. Aborting.
+    pause
+    exit /b 1
+)
+echo   [OK] Skills ready (%SCRIPT_DIR%\.claude\skills\)
+
+REM --- Copy skills ---
 echo.
-echo [INSTALL] Copying skills to user directory...
-set "SRC_SKILLS=%VERSION_ROOT%.claude\skills"
+echo [INSTALL] Copying skills...
 
-copy /Y "%SRC_SKILLS%\init-wordlist.md" "%USER_SKILLS%\" >nul 2>&1
-if %errorlevel% equ 0 (echo   [OK] init-wordlist.md) else (echo   [FAIL] init-wordlist.md)
+mkdir "%USER_SKILLS%\init-wordlist" 2>nul
+copy /Y "%SRC_SKILLS%\init-wordlist.md" "%USER_SKILLS%\init-wordlist\SKILL.md" >nul 2>&1
+if %errorlevel% equ 0 (
+    echo   [OK] init-wordlist
+) else (
+    echo   [FAIL] init-wordlist - copy failed
+)
 
-copy /Y "%SRC_SKILLS%\generate-article.md" "%USER_SKILLS%\" >nul 2>&1
-if %errorlevel% equ 0 (echo   [OK] generate-article.md) else (echo   [FAIL] generate-article.md)
+mkdir "%USER_SKILLS%\generate-article" 2>nul
+copy /Y "%SRC_SKILLS%\generate-article.md" "%USER_SKILLS%\generate-article\SKILL.md" >nul 2>&1
+if %errorlevel% equ 0 (
+    echo   [OK] generate-article
+) else (
+    echo   [FAIL] generate-article - copy failed
+)
 
-REM --- Create data directories ---
+REM --- Verify ---
 echo.
-echo [INFO] Ensuring data directories exist...
-if not exist "%VERSION_ROOT%data" mkdir "%VERSION_ROOT%data"
-if not exist "%VERSION_ROOT%articles" mkdir "%VERSION_ROOT%articles"
-
-REM --- Verify installation ---
-echo.
-echo ============================================
-echo   Verification
-echo ============================================
+echo [VERIFY] Checking installation...
 
 set "ERRORS=0"
 
-if exist "%VERSION_ROOT%tools\word-triage\index.html" (echo [OK] Web tool: index.html) else (echo [FAIL] Web tool missing & set /a ERRORS+=1)
-if exist "%VERSION_ROOT%tools\word-triage\regex-config.txt" (echo [OK] Regex config: regex-config.txt) else (echo [FAIL] Regex config missing & set /a ERRORS+=1)
-if exist "%VERSION_ROOT%tools\extract-words.py" (echo [OK] Script: extract-words.py) else (echo [FAIL] extract-words.py missing & set /a ERRORS+=1)
-if exist "%VERSION_ROOT%tools\count-words.py" (echo [OK] Script: count-words.py) else (echo [FAIL] count-words.py missing & set /a ERRORS+=1)
-if exist "%VERSION_ROOT%tools\check-similarity.py" (echo [OK] Script: check-similarity.py) else (echo [FAIL] check-similarity.py missing & set /a ERRORS+=1)
+if exist "%USER_SKILLS%\init-wordlist\SKILL.md" (
+    echo   [OK] init-wordlist
+) else (
+    echo   [FAIL] init-wordlist not installed
+    set /a ERRORS+=1
+)
 
-if exist "%USER_SKILLS%\init-wordlist.md" (echo [OK] User skill: init-wordlist.md) else (set /a ERRORS+=1 & echo [FAIL] User skill not installed)
-if exist "%USER_SKILLS%\generate-article.md" (echo [OK] User skill: generate-article.md) else (set /a ERRORS+=1 & echo [FAIL] User skill not installed)
+if exist "%USER_SKILLS%\generate-article\SKILL.md" (
+    echo   [OK] generate-article
+) else (
+    echo   [FAIL] generate-article not installed
+    set /a ERRORS+=1
+)
 
+REM --- Result ---
 echo.
-if %ERRORS% equ 0 (
+if "%ERRORS%"=="0" (
     echo ============================================
     echo   Installation SUCCESSFUL!
     echo ============================================
     echo.
-    echo   Skills installed to: %USER_SKILLS%
+    echo   Language: see config.json
+    echo   Run 'python configure.py' to change languages.
     echo.
-    echo   To start:
-    echo     1. Run: serve.bat (from the en/ directory)
-    echo     2. Open Claude Code and type: /init-wordlist
+    echo   Skills available in Claude Code:
+    echo     /init-wordlist   - Initialize word list
+    echo     /generate-article - Generate memory article
     echo.
+    echo   Next: double-click serve.bat to start
 ) else (
     echo ============================================
-    echo   Installation completed with %ERRORS% warning(s).
-    echo   Please check the FAIL items above.
+    echo   Installation FAILED - %ERRORS% error(s)
     echo ============================================
 )
 

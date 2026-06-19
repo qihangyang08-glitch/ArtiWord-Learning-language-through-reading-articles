@@ -1,8 +1,6 @@
 #!/bin/bash
-set -e
-
 echo "============================================"
-echo "  Word-Lerning (English) — One-Click Install"
+echo "  Word-Lerning (English) - One-Click Install"
 echo "============================================"
 echo ""
 
@@ -44,9 +42,11 @@ echo ""
 echo "[INSTALL] Copying skills to user directory..."
 
 for skill in init-wordlist.md generate-article.md; do
+    skill_name="${skill%.md}"
     if [ -f "${SRC_SKILLS}/${skill}" ]; then
-        cp "${SRC_SKILLS}/${skill}" "${USER_SKILLS}/"
-        echo "  [OK] ${skill}"
+        mkdir -p "${USER_SKILLS}/${skill_name}"
+        cp "${SRC_SKILLS}/${skill}" "${USER_SKILLS}/${skill_name}/SKILL.md"
+        echo "  [OK] ${skill_name}"
     else
         echo "  [FAIL] ${skill} not found"
     fi
@@ -87,8 +87,8 @@ for f in \
     fi
 done
 
-for skill in init-wordlist.md generate-article.md; do
-    if [ -f "${USER_SKILLS}/${skill}" ]; then
+for skill in init-wordlist generate-article; do
+    if [ -f "${USER_SKILLS}/${skill}/SKILL.md" ]; then
         echo "[OK] User skill: ${skill}"
     else
         echo "[FAIL] User skill not installed: ${skill}"

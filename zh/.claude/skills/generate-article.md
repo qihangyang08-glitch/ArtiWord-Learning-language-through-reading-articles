@@ -1,3 +1,10 @@
+---
+name: generate-article
+description: >
+  Generate an English reading article that embeds CET-6 vocabulary words
+  for memorization and translation practice via authentic article rewriting.
+---
+
 # Generate Memory Article
 
 Generate an English reading article that embeds vocabulary words for memorization and translation practice.

@@ -1,6 +1,13 @@
-# Generate Memory Article (English)
+---
+name: generate-article
+description: >
+  Generate a reading article in French that embeds vocabulary words
+  for memorization and translation practice (French ↔ English).
+---
 
-Generate a reading article in the user's target language that embeds vocabulary words for memorization and translation practice.
+# Generate Memory Article
+
+Generate a reading article in French that embeds vocabulary words for memorization and translation practice.
 
 ---
 

@@ -1,6 +1,13 @@
+---
+name: init-wordlist
+description: >
+  Configure the regex pattern for the Word Triage web tool to parse
+  a vocabulary list — then report the results for the user to proceed.
+---
+
 # Initialize Word List Regex
 
-Configure the regex pattern used by the word-triage web tool to parse a user's vocabulary list — then launch the tool automatically.
+Configure the regex pattern used by the word-triage web tool to parse a user's vocabulary list — then report the results for the user to proceed.
 
 ---
 
@@ -36,7 +43,6 @@ All project scripts already call `sys.stdout.reconfigure(encoding='utf-8')` inte
 ### Step 1: Locate the Word List
 
 Ask the user to provide the path to their complete word list file. If the user doesn't specify, check common locations:
-- `word-list-full.txt` in project root
 - Any `.txt` file under `data/`
 - Any file the user drags or pastes the path of
 
@@ -209,30 +215,38 @@ else:
 
 **Requirement: ≥ 10 words parsed.** If fewer, the regex is fundamentally wrong — go back to Step 2.
 
-### Step 6: Launch the Web Tool
+### Step 6: 汇报配置结果
 
-Once all tests pass:
+**不要自动启动服务器或打开浏览器。** 请用中文向用户汇报以下内容：
 
-**Start the local server** (if not already running):
+---
 
-```bash
-# Check if port 8080 is in use, if not, start server
-(python -c "import socket; s=socket.socket(); s.connect(('localhost',8080)); s.close(); print('RUNNING')" 2>/dev/null && echo "Server already running") || (echo "Starting server..." && start "WordLerning-Server" python -m http.server 8080 --directory .)
-```
+**📋 词表配置报告**
 
-**Open the browser:**
+- **词表是否找到：** `<是/否>` — `<文件路径>`
+- **词表名称：** `<文件名>`（例如：`考研词汇表.txt`）
+- **词表排列方式：** `<字母顺序 / 按频率 / 随机 / 按章节 / 其他>`
+- **检测到的格式：** `<Tab分隔 / 空格分隔 / 斜杠分隔 / 等>`
+- **正则表达式已写入：** `<正则表达式>` → 已保存至 `tools/word-triage/regex-config.txt`
 
-```bash
-start http://localhost:8080/tools/word-triage/
-```
+**测试结果：**
+- 阶段A（全量解析）：通过率 `<XX.X>%`（要求 ≥95%）
+- 阶段B（捕获组验证）：`<N>` 个错误 / 20 条样本（要求 0 个错误）
+- 阶段C（浏览器模拟）：解析出 `<N>` 个单词（要求 ≥10）
 
-(On macOS use `open`, on Linux use `xdg-open` instead of `start`)
+---
 
-### Step 7: Report
+**下一步你可以进行的操作：**
 
-Tell the user:
-- **Detected format**: e.g., "Tab-separated word + meaning"
-- **Regex written**: the pattern saved to `regex-config.txt`
-- **Test results**: Phase A pass rate, Phase B errors, Phase C word count
-- **Actions taken**: Server started, browser opened
-- **Next step**: "The web tool is open. Click '选择词表文件' and load your word list to begin triage."
+1. 启动本地服务器：
+   ```
+   python -m http.server 8080 --directory .
+   ```
+2. 在浏览器中打开分词工具：
+   - Windows：`start http://localhost:8080/tools/word-triage/`
+   - macOS：`open http://localhost:8080/tools/word-triage/`
+   - Linux：`xdg-open http://localhost:8080/tools/word-triage/`
+3. 在网页工具中，点击 **"选择词表文件"**，加载你的词表开始分类。
+4. 使用快捷键分类单词：`←` 不熟悉，`→` 熟悉，`Space` 翻转查看释义，`↓` 跳过。
+
+
